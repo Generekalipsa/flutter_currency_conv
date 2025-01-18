@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -17,6 +16,8 @@ class _HomeScreenState extends State<HomeScreen> {
   double total = 0.0;
   TextEditingController amountController = TextEditingController();
   List<String> currencies = [];
+  bool isLoading = true;
+  bool isFetching = false;
 
   @override
   void initState() {
@@ -24,26 +25,53 @@ class _HomeScreenState extends State<HomeScreen> {
     _getCurrencies();
   }
 
-  Future <void> _getCurrencies() async {
-    var response = await http.get(Uri.parse("https://api.exchangerate-api.com/v4/latest/USD"));
-
-    var data = json.decode(response.body);
-    setState(() {
-      currencies = (data['rates'] as Map<String, dynamic>).keys.toList();
-      rate = data['rates'][forCurrency];
-    });
-
+  Future<void> _getCurrencies() async {
+    if (!isFetching) {
+      setState(() {
+        isFetching = true;
+      });
+      try {
+        var response = await http.get(Uri.parse("https://api.exchangerate-api.com/v4/latest/USD"));
+        if (response.statusCode == 200) {
+          var data = json.decode(response.body);
+          setState(() {
+            currencies = (data['rates'] as Map<String, dynamic>).keys.toList();
+            rate = data['rates'][forCurrency];
+            isLoading = false;
+          });
+        } else {
+          throw Exception('Failed to load currencies');
+        }
+      } catch (e) {
+        setState(() {
+          isLoading = false;
+        });
+        print("Error collecting data: $e");
+      } finally {
+        setState(() {
+          isFetching = false;
+        });
+      }
+    }
   }
 
-  Future <void> _getRate() async {
-    var response = await http.get(Uri.parse("https://api.exchangerate-api.com/v4/latest/$fromCurrency"));
-    var data = json.decode(response.body);
-    setState(() {
-      rate = data['rates'][forCurrency];
-    });
+  Future<void> _getRate() async {
+    try {
+      var response = await http.get(Uri.parse("https://api.exchangerate-api.com/v4/latest/$fromCurrency"));
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        setState(() {
+          rate = data['rates'][forCurrency];
+        });
+      } else {
+        throw Exception('Failed to load rate');
+      }
+    } catch (e) {
+      print("Error downloading exchange rate: $e");
+    }
   }
 
-  void _swapCurrencies(){
+  void _swapCurrencies() {
     setState(() {
       String temp = fromCurrency;
       fromCurrency = forCurrency;
@@ -102,12 +130,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
+                    // Dropdown for "fromCurrency"
                     SizedBox(
-                      width: 120, // Określamy szerokość, by dropdown miał odpowiedni rozmiar
-                      child: DropdownButton<String>(
+                      width: 120,
+                      child: isLoading
+                          ? Center(child: CircularProgressIndicator())
+                          : DropdownButton<String>(
                         value: fromCurrency,
                         isExpanded: true,
                         style: TextStyle(color: Colors.white),
+                        dropdownColor: Color(0xFF2c3e50),
                         items: currencies.map((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
@@ -122,6 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                     ),
+                    // Swap button
                     IconButton(
                       onPressed: _swapCurrencies,
                       icon: Icon(
@@ -130,12 +163,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: Colors.white,
                       ),
                     ),
+                    // Dropdown for "toCurrency"
                     SizedBox(
-                      width: 120, // Określamy szerokość dla drugiego dropdown
-                      child: DropdownButton<String>(
+                      width: 120,
+                      child: isLoading
+                          ? Center(child: CircularProgressIndicator())
+                          : DropdownButton<String>(
                         value: forCurrency,
                         isExpanded: true,
                         style: TextStyle(color: Colors.white),
+                        dropdownColor: Color(0xFF2c3e50),
                         items: currencies.map((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
