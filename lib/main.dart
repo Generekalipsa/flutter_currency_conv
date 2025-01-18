@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'home.dart';
+
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -9,6 +11,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context){
-    return const Placeholder();
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: "Flutter Currency Converter",
+      home: HomeScreen(),
+    );
   }
 }
