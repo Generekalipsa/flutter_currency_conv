@@ -10,15 +10,18 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String fromCurrency = 'USD';
   String forCurrency = 'PLN';
-  double rate = 4.0; // Przykładowy kurs
+  double rate = 0.0;
   double total = 0.0;
   TextEditingController amountController = TextEditingController();
-  List<String> currencies = ['USD', 'PLN', 'EUR', 'GBP']; // Przykładowe waluty
+  List<String> currencies = [];
 
   @override
   void initState() {
     super.initState();
+    _getCurrencies();
   }
+
+  Future <void> _getCurrencies() async {}
 
   @override
   Widget build(BuildContext context) {
