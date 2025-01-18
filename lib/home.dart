@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,7 +24,16 @@ class _HomeScreenState extends State<HomeScreen> {
     _getCurrencies();
   }
 
-  Future <void> _getCurrencies() async {}
+  Future <void> _getCurrencies() async {
+    var response = await http.get(Uri.parse("https://api.exchangerate-api.com/v4/latest/USD"));
+
+    var data = json.decode(response.body);
+    setState(() {
+      currencies = (data['rates'] as Map<String, dynamic>).keys.toList();
+      rate = data['rates'][forCurrency];
+    });
+
+  }
 
   @override
   Widget build(BuildContext context) {
