@@ -35,6 +35,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   }
 
+  Future <void> _getRate() async {
+    var response = await http.get(Uri.parse("https://api.exchangerate-api.com/v4/latest/$fromCurrency"));
+    var data = json.decode(response.body);
+    setState(() {
+      rate = data['rates'][forCurrency];
+    });
+  }
+
+  void _swapCurrencies(){
+    setState(() {
+      String temp = fromCurrency;
+      fromCurrency = forCurrency;
+      forCurrency = temp;
+      _getRate();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,19 +117,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         onChanged: (newValue) {
                           setState(() {
                             fromCurrency = newValue!;
+                            _getRate();
                           });
                         },
                       ),
                     ),
                     IconButton(
-                      onPressed: () {
-                        setState(() {
-                          // Logika swapowania walut
-                          String temp = fromCurrency;
-                          fromCurrency = forCurrency;
-                          forCurrency = temp;
-                        });
-                      },
+                      onPressed: _swapCurrencies,
                       icon: Icon(
                         Icons.swap_horiz,
                         size: 40,
@@ -134,6 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onChanged: (newValue) {
                           setState(() {
                             forCurrency = newValue!;
+                            _getRate();
                           });
                         },
                       ),
