@@ -200,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               SizedBox(height: 20),
               Text(
-                '${total.toStringAsFixed(3)}',
+                '${total.toStringAsFixed(2)}',
                 style: TextStyle(
                   fontSize: 30,
                   color: Colors.green,
